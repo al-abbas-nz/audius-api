@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
+import StreamTrack from './StreamTrack'
 
 const selectHost = async () => {
     const sample = (arr) => arr[Math.floor(Math.random() * arr.length)]
@@ -13,30 +14,33 @@ const selectHost = async () => {
 
 
 const AudiusApi = () => {
-    const [track, setTrack] = useState(null)
-
+    const [tracks, setTracks] = useState(null)
+    const [host, setHost] = useState(null)
 
     useEffect(() => {
         const fetchTrack = async () => {
-            const host = await selectHost()
-            const {data} = await axios.get(`${host}/v1/tracks/trending?limit=10`)
-            .catch(err => console.log("Error! " + err))
-                
-            setTrack(data.data)
+            const selectedHost = await selectHost()
+            const { data } = await axios.get(`${selectedHost}/v1/tracks/trending`)
+            .catch(error => {
+                console.log('Looks like there was a problem: \n', error)
+            })        
+            setHost(selectedHost)
+            setTracks(data.data)
             
         }
         fetchTrack()
     }, [])
 
-    return track && (
+    return tracks && (
         <div>
-            {track.map(t => (
+            {tracks.map(t => (
                 <div key={t.id}>
                 <p>{t.title}</p>
                 <img src={t.artwork['150x150']} alt=""/>
+                <StreamTrack trackId={t.id} track={tracks} host={host} />
                 </div>
             ))}
-            {console.log(track)}
+            {console.log(tracks)}
            
         </div>
     )
